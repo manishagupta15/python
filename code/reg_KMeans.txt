@@ -1,0 +1,151 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.tree import DecisionTreeRegressor
+import numpy as np
+import os
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings; warnings.filterwarnings(action='once')
+from mlxtend.frequent_patterns import apriori
+from mlxtend.frequent_patterns import association_rules
+import squarify
+import numpy as np
+FilePath = r'C:\Users\manisha.g\Documents\Work\KC'
+os.chdir(FilePath)
+pd.options.display.float_format = "{:.2f}".format
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+#from sklearn.metrics import classfication_report
+from sklearn.metrics import classification_report
+##confusion_matrix  #https://realpython.com/logistic-regression-python/#logistic-regression-in-python-with-scikit-learn-example-1
+from sklearn.metrics import confusion_matrix
+import psycopg2
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
+import statsmodels.api as sm
+import pylab as pl
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
+from sklearn import tree
+from six import StringIO  
+from IPython.display import Image
+from sklearn.tree import export_graphviz
+
+
+N = 200
+X = np.linspace(0, 10, N).reshape(N, 1)
+Y = np.sin(X)
+
+Ntrain = 20
+idx = np.random.choice(N, Ntrain)
+Xtrain = X[idx]
+Ytrain = Y[idx]
+
+knn = KNeighborsRegressor(n_neighbors=2, weights='distance')
+knn.fit(Xtrain, Ytrain)
+Yknn = knn.predict(X)
+
+dt = DecisionTreeRegressor()
+dt.fit(Xtrain, Ytrain)
+Ydt = dt.predict(X)
+
+plt.scatter(Xtrain, Ytrain) # show the training points
+plt.plot(X, Y) # show the original data
+plt.plot(X, Yknn, label='KNN')
+plt.plot(X, Ydt, label='Decision Tree')
+plt.legend()
+plt.show()
+
+
+//////////////// Kmeans Clustering
+import pandas as pd
+import numpy as np
+import sklearn
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import MinMaxScaler
+from plotly.offline import iplot, init_notebook_mode
+import plotly.graph_objs as go
+import plotly.io as pio
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
+
+
+clicks=pd.read_csv('KClustering.csv')
+clicks.rename(
+    columns={"UrlDomain":"UrlDomain",
+                "PCBingClicks ":"PCBingClicks",
+                   "PCClicks ":"PCClicks"}
+          ,inplace=True)
+clicks.describe()
+clicks = clicks.replace(r'^\s*$', np.nan, regex=True)
+clicks['PCClicks'] = [float(str(i).replace(",", "")) for i in clicks['PCClicks']]
+# clicks['PCBingClicks'] = [float(str(i).replace(",", "")) for i in clicks['PCBingClicks']]
+clicks.info()
+
+boxplot = clicks.boxplot(column=['PCClicks'],grid=False, rot=45, fontsize=15)  
+
+
+df=pd.DataFrame()
+df['PCClicks']=clicks['PCClicks'] 
+df['const']=1
+
+wcss=[]
+sse = {}
+
+for i in range(1, 11):
+    kmeans = KMeans(n_clusters = i, init = 'k-means++', max_iter = 300,
+                    n_init = 10, random_state = 100)
+    kmeans.fit(df)
+    wcss.append(kmeans.inertia_)
+    sse[i] = kmeans.inertia_
+    print("For cluster = {}, SSE/WCSS is {}".format(i, sse[i]))
+
+plt.plot(range(1, 11), wcss)
+plt.title('The elbow method')
+plt.xlabel('Number of clusters')
+plt.ylabel('WCSS')
+
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+kmeans = KMeans(n_clusters=10, init='k-means++', max_iter=10, n_init=10, random_state=0)
+kmeans.fit(df) 
+labels = kmeans.labels_
+kmeans_label= pd.DataFrame(labels, index=df.PCClicks, columns=['Cluster ID'])
+centroids = kmeans.cluster_centers_
+kemans_centroids =pd.DataFrame(centroids,columns=df.columns)
+
+kemans_centroids
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
+kmeans.cluster_centers_
+
+kmeans_label1=kmeans_label.reset_index()
+kmeans_label1
+rs = kmeans_label1.groupby('Cluster ID') \
+       .agg(countelemnts=('Cluster ID','size'), Cluster_center=('PCClicks', 'mean'),min_range=('PCClicks', 'min'),max_range=('PCClicks', 'max'),SD=('PCClicks', 'std'),median=('PCClicks', 'median')) \
+       .reset_index()
+	   
+	   
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+import numpy as np
+
+sil_coeff_list = []
+k_cluster=[]
+
+for n_cluster in range(2, 10):
+    kmeans = KMeans(n_clusters = n_cluster).fit(df)
+    label = kmeans.labels_
+    sil_coeff = silhouette_score(df, label, metric='euclidean')
+    print("For n_clusters = {}, The Silhouette Coefficient is {}".format(n_cluster, sil_coeff))
+    sil_coeff_list.append(sil_coeff)
+    k_cluster.append(n_cluster)
+
+plt.plot(k_cluster,sil_coeff_list)
+plt.ylabel('Silhouette Coff'),plt.xlabel('No. of cluster')
+plt.show()
